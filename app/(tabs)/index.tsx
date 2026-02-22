@@ -1,27 +1,30 @@
+import { ResizeMode, Video } from 'expo-av';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Dimensions, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { supabase } from '../../supabase';
 
 const { height, width } = Dimensions.get('window');
+const MUX_PLAYBACK_ID = 'eIba00DzgnlfkOCoLHMarw00cn6M4dW00vJ7fmGlMQUZHs';
 
-function OffreCard({ offre, isActive }: { offre: any, isActive: boolean }) {
+function OffreCard({ offre }: { offre: any }) {
   const router = useRouter();
 
   return (
-    <View style={[styles.card, { backgroundColor: offre.couleur || '#2D0A5E' }]}>
-      <View style={styles.videoPlaceholder}>
-        <Text style={styles.videoIcon}>🎬</Text>
-        <Text style={styles.videoHint}>Vidéo de présentation</Text>
-      </View>
-
+    <View style={styles.card}>
+      <Video
+        source={{ uri: `https://stream.mux.com/${MUX_PLAYBACK_ID}.m3u8` }}
+        style={styles.video}
+        resizeMode={ResizeMode.COVER}
+        shouldPlay
+        isLooping
+        isMuted={false}
+      />
       <View style={styles.overlay}>
         <View style={styles.infoBox}>
-          <View style={styles.badge}>
-            <Text style={[styles.badgeText, { color: offre.type === 'offre' ? '#7C5CFC' : '#FC5C7D' }]}>
-              {offre.type === 'offre' ? '● Offre' : '● Candidature'}
-            </Text>
-          </View>
+          <Text style={[styles.badgeText, { color: offre.type === 'offre' ? '#7C5CFC' : '#FC5C7D' }]}>
+            {offre.type === 'offre' ? '● Offre' : '● Candidature'}
+          </Text>
           <Text style={styles.titre}>{offre.titre}</Text>
           <Text style={styles.entreprise}>{offre.entreprise}</Text>
           <View style={styles.metaRow}>
@@ -59,7 +62,6 @@ function OffreCard({ offre, isActive }: { offre: any, isActive: boolean }) {
 
 export default function HomeScreen() {
   const [offres, setOffres] = useState<any[]>([]);
-  const [activeIndex, setActiveIndex] = useState(0);
 
   useEffect(() => {
     async function chargerOffres() {
@@ -79,13 +81,7 @@ export default function HomeScreen() {
         showsVerticalScrollIndicator={false}
         snapToInterval={height - 70}
         decelerationRate="fast"
-        onMomentumScrollEnd={(e) => {
-          const index = Math.round(e.nativeEvent.contentOffset.y / (height - 70));
-          setActiveIndex(index);
-        }}
-        renderItem={({ item, index }) => (
-          <OffreCard offre={item} isActive={index === activeIndex} />
-        )}
+        renderItem={({ item }) => <OffreCard offre={item} />}
       />
     </View>
   );
@@ -104,27 +100,18 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#FFFFFF',
     zIndex: 10,
-    textShadowColor: 'rgba(0,0,0,0.5)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 4,
   },
   card: {
     width,
     height: height - 70,
-    position: 'relative',
+    backgroundColor: '#000',
   },
-  videoPlaceholder: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  videoIcon: {
-    fontSize: 80,
-    marginBottom: 12,
-  },
-  videoHint: {
-    color: 'rgba(255,255,255,0.4)',
-    fontSize: 14,
+  video: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
   },
   overlay: {
     position: 'absolute',
@@ -135,26 +122,22 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
     padding: 16,
     paddingBottom: 24,
+    backgroundColor: 'rgba(0,0,0,0.4)',
   },
   infoBox: {
     flex: 1,
     marginRight: 12,
   },
-  badge: {
-    marginBottom: 8,
-  },
   badgeText: {
     fontSize: 13,
     fontWeight: 'bold',
+    marginBottom: 8,
   },
   titre: {
     fontSize: 20,
     fontWeight: 'bold',
     color: '#FFFFFF',
     marginBottom: 4,
-    textShadowColor: 'rgba(0,0,0,0.8)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 4,
   },
   entreprise: {
     fontSize: 14,
