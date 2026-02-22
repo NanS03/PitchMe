@@ -1,25 +1,61 @@
-import { ResizeMode, Video } from 'expo-av';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Dimensions, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { supabase } from '../../supabase';
 
 const { height, width } = Dimensions.get('window');
-const MUX_PLAYBACK_ID = 'eIba00DzgnlfkOCoLHMarw00cn6M4dW00vJ7fmGlMQUZHs';
 
 function OffreCard({ offre }: { offre: any }) {
   const router = useRouter();
+  const [liked, setLiked] = useState(false);
+  const [likeCount, setLikeCount] = useState(0);
+
+  useEffect(() => {
+    async function checkLike() {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const { data } = await supabase
+        .from('likes')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('offre_id', offre.id);
+      if (data && data.length > 0) setLiked(true);
+      const { count } = await supabase
+        .from('likes')
+        .select('*', { count: 'exact', head: true })
+        .eq('offre_id', offre.id);
+      setLikeCount(count || 0);
+    }
+    checkLike();
+  }, []);
+
+  async function toggleLike() {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    if (liked) {
+      await supabase.from('likes').delete()
+        .eq('user_id', user.id)
+        .eq('offre_id', offre.id);
+      setLiked(false);
+      setLikeCount(c => c - 1);
+    } else {
+      await supabase.from('likes').insert({
+        user_id: user.id,
+        offre_id: offre.id,
+        created_at: new Date().toISOString(),
+      });
+      setLiked(true);
+      setLikeCount(c => c + 1);
+    }
+  }
 
   return (
     <View style={styles.card}>
-      <Video
-        source={{ uri: `https://stream.mux.com/${MUX_PLAYBACK_ID}.m3u8` }}
-        style={styles.video}
-        resizeMode={ResizeMode.COVER}
-        shouldPlay
-        isLooping
-        isMuted={false}
-      />
+      <View style={styles.videoPlaceholder}>
+        <Text style={styles.videoIcon}>🎬</Text>
+        <Text style={styles.videoHint}>Vidéo de présentation</Text>
+      </View>
+
       <View style={styles.overlay}>
         <View style={styles.infoBox}>
           <Text style={[styles.badgeText, { color: offre.type === 'offre' ? '#7C5CFC' : '#FC5C7D' }]}>
@@ -42,9 +78,9 @@ function OffreCard({ offre }: { offre: any }) {
         </View>
 
         <View style={styles.actions}>
-          <TouchableOpacity style={styles.actionBtn}>
-            <Text style={styles.actionIcon}>❤️</Text>
-            <Text style={styles.actionLabel}>J'aime</Text>
+          <TouchableOpacity style={styles.actionBtn} onPress={toggleLike}>
+            <Text style={styles.actionIcon}>{liked ? '❤️' : '🤍'}</Text>
+            <Text style={styles.actionLabel}>{likeCount}</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.actionBtn}>
             <Text style={styles.actionIcon}>🔖</Text>
@@ -104,14 +140,20 @@ const styles = StyleSheet.create({
   card: {
     width,
     height: height - 70,
-    backgroundColor: '#000',
+    backgroundColor: '#1A1A2E',
   },
-  video: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
+  videoPlaceholder: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  videoIcon: {
+    fontSize: 80,
+    marginBottom: 12,
+  },
+  videoHint: {
+    color: 'rgba(255,255,255,0.4)',
+    fontSize: 14,
   },
   overlay: {
     position: 'absolute',
