@@ -9,6 +9,7 @@ function OffreCard({ offre }: { offre: any }) {
   const router = useRouter();
   const [liked, setLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(0);
+  const [sauvegarde, setSauvegarde] = useState(false);
 
   useEffect(() => {
     async function checkLike() {
@@ -25,6 +26,13 @@ function OffreCard({ offre }: { offre: any }) {
         .select('*', { count: 'exact', head: true })
         .eq('offre_id', offre.id);
       setLikeCount(count || 0);
+
+      const { data: sauv } = await supabase
+        .from('sauvegardes')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('offre_id', offre.id);
+      if (sauv && sauv.length > 0) setSauvegarde(true);
     }
     checkLike();
   }, []);
@@ -46,6 +54,24 @@ function OffreCard({ offre }: { offre: any }) {
       });
       setLiked(true);
       setLikeCount(c => c + 1);
+    }
+  }
+
+  async function toggleSauvegarde() {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    if (sauvegarde) {
+      await supabase.from('sauvegardes').delete()
+        .eq('user_id', user.id)
+        .eq('offre_id', offre.id);
+      setSauvegarde(false);
+    } else {
+      await supabase.from('sauvegardes').insert({
+        user_id: user.id,
+        offre_id: offre.id,
+        created_at: new Date().toISOString(),
+      });
+      setSauvegarde(true);
     }
   }
 
@@ -82,8 +108,8 @@ function OffreCard({ offre }: { offre: any }) {
             <Text style={styles.actionIcon}>{liked ? '❤️' : '🤍'}</Text>
             <Text style={styles.actionLabel}>{likeCount}</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.actionBtn}>
-            <Text style={styles.actionIcon}>🔖</Text>
+          <TouchableOpacity style={styles.actionBtn} onPress={toggleSauvegarde}>
+            <Text style={styles.actionIcon}>{sauvegarde ? '🔖' : '🏷️'}</Text>
             <Text style={styles.actionLabel}>Sauver</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.actionBtn}>
