@@ -1,3 +1,4 @@
+import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
@@ -42,6 +43,7 @@ const conversations = [
 
 export default function MessagesScreen() {
   const [recherche, setRecherche] = useState('');
+  const router = useRouter();
 
   const filtres = conversations.filter(c =>
     c.nom.toLowerCase().includes(recherche.toLowerCase())
@@ -64,7 +66,11 @@ export default function MessagesScreen() {
 
       <ScrollView>
         {filtres.map((conv) => (
-          <TouchableOpacity key={conv.id} style={styles.convCard}>
+          <TouchableOpacity
+            key={conv.id}
+            style={styles.convCard}
+            onPress={() => router.push(`/chat/${conv.id}`)}
+          >
             <View style={styles.avatar}>
               <Text style={styles.avatarText}>{conv.avatar}</Text>
             </View>
