@@ -1,38 +1,29 @@
 import { useRouter } from 'expo-router';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-
-const offres = [
-  {
-    id: 1,
-    type: 'offre',
-    titre: 'Product Designer Senior',
-    entreprise: 'Ekino Paris',
-    lieu: 'Paris 9e',
-    salaire: '55-70k€',
-    couleur: '#2D0A5E',
-  },
-  {
-    id: 2,
-    type: 'candidature',
-    titre: 'Je cherche un poste React/Node.js',
-    entreprise: 'Candidature spontanée',
-    lieu: 'Lyon / Remote',
-    salaire: '',
-    couleur: '#1A0A20',
-  },
-  {
-    id: 3,
-    type: 'offre',
-    titre: 'Head of Sales',
-    entreprise: 'Scaleway',
-    lieu: 'Paris / Hybrid',
-    salaire: '65-85k€',
-    couleur: '#0A1A1A',
-  },
-];
+import { useEffect, useState } from 'react';
+import { ActivityIndicator, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { supabase } from '../../supabase';
 
 export default function HomeScreen() {
   const router = useRouter();
+  const [offres, setOffres] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function chargerOffres() {
+      const { data, error } = await supabase.from('offres').select('*');
+      if (data) setOffres(data);
+      setLoading(false);
+    }
+    chargerOffres();
+  }, []);
+
+  if (loading) {
+    return (
+      <View style={styles.loading}>
+        <ActivityIndicator size="large" color="#7C5CFC" />
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -71,6 +62,12 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#1A1A2E',
     paddingTop: 60,
+  },
+  loading: {
+    flex: 1,
+    backgroundColor: '#1A1A2E',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   logo: {
     fontSize: 32,
