@@ -75,6 +75,7 @@ export default function TabLayout() {
       <Tabs.Screen name="dashboard" options={{ href: null }} />
       <Tabs.Screen name="poster" options={{ href: null }} />
       <Tabs.Screen name="matching" options={{ href: null }} />
+      <Tabs.Screen name="onboarding" options={{ href: null }} />
     </Tabs>
   );
 }
