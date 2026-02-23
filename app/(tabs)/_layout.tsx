@@ -1,7 +1,36 @@
 import { Tabs } from 'expo-router';
-import { Text } from 'react-native';
+import { useEffect, useState } from 'react';
+import { Text, View } from 'react-native';
+import { supabase } from '../../supabase';
 
 export default function TabLayout() {
+  const [nonLues, setNonLues] = useState(0);
+
+  useEffect(() => {
+    async function chargerNonLues() {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const { count } = await supabase
+        .from('notifications')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id)
+        .eq('lu', false);
+      setNonLues(count || 0);
+    }
+    chargerNonLues();
+
+    const channel = supabase
+      .channel('notifs-badge')
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'notifications',
+      }, () => { chargerNonLues(); })
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, []);
+
   return (
     <Tabs
       screenOptions={{
@@ -35,7 +64,19 @@ export default function TabLayout() {
         options={{
           title: 'Notifs',
           tabBarIcon: ({ focused }) => (
-            <Text style={{ fontSize: 24, opacity: focused ? 1 : 0.4 }}>🔔</Text>
+            <View style={{ position: 'relative' }}>
+              <Text style={{ fontSize: 24, opacity: focused ? 1 : 0.4 }}>🔔</Text>
+              {nonLues > 0 && (
+                <View style={{
+                  position: 'absolute', top: -2, right: -6,
+                  width: 16, height: 16, borderRadius: 8,
+                  backgroundColor: '#FF2D55',
+                  alignItems: 'center', justifyContent: 'center',
+                }}>
+                  <Text style={{ color: '#FFF', fontSize: 9, fontWeight: '900' }}>{nonLues}</Text>
+                </View>
+              )}
+            </View>
           ),
         }}
       />
