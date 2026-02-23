@@ -1,11 +1,70 @@
-import { ResizeMode, Video } from 'expo-av';
 import { useRouter } from 'expo-router';
+import { useVideoPlayer, VideoView } from 'expo-video';
 import { useEffect, useState } from 'react';
 import { Dimensions, FlatList, ScrollView, Share, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { supabase } from '../../supabase';
 
 const { height, width } = Dimensions.get('window');
 const CATEGORIES = ['Suivis', 'Pour toi', 'Près de moi'];
+
+function VideoCard({ uri }: { uri: string }) {
+  const [paused, setPaused] = useState(false);
+  const [vitesse, setVitesse] = useState(1);
+  const [progress, setProgress] = useState(0);
+  const player = useVideoPlayer(uri, player => {
+    player.loop = true;
+    player.muted = false;
+    player.play();
+  });
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (player.duration > 0) {
+        setProgress(player.currentTime / player.duration);
+      }
+    }, 500);
+    return () => clearInterval(interval);
+  }, [player]);
+
+  function togglePlay() {
+    if (paused) { player.play(); } else { player.pause(); }
+    setPaused(p => !p);
+  }
+
+  function avancer() { player.seekBy(10); }
+  function reculer() { player.seekBy(-10); }
+  function activerX2() { player.playbackRate = 2; setVitesse(2); }
+  function desactiverX2() { player.playbackRate = 1; setVitesse(1); }
+
+  return (
+    <View style={StyleSheet.absoluteFillObject}>
+      <VideoView
+        player={player}
+        style={StyleSheet.absoluteFillObject}
+        contentFit="cover"
+        nativeControls={false}
+      />
+      <View style={[StyleSheet.absoluteFillObject, { flexDirection: 'row' }]}>
+        <TouchableOpacity style={styles.videoZoneGauche} onPress={reculer} onLongPress={activerX2} onPressOut={desactiverX2} activeOpacity={1} />
+        <TouchableOpacity style={styles.videoZoneCentre} onPress={togglePlay} activeOpacity={1} />
+        <TouchableOpacity style={styles.videoZoneDroite} onPress={avancer} onLongPress={activerX2} onPressOut={desactiverX2} activeOpacity={1} />
+      </View>
+      {paused && (
+        <View style={styles.pauseIcon} pointerEvents="none">
+          <Text style={{ color: 'rgba(255,255,255,0.4)', fontSize: 70 }}>▶</Text>
+        </View>
+      )}
+      <View style={styles.progressBar} pointerEvents="none">
+        <View style={[styles.progressFill, { width: `${progress * 100}%` as any }]} />
+      </View>
+      {vitesse === 2 && (
+        <View style={styles.vitesseIndicateur} pointerEvents="none">
+          <Text style={styles.vitesseText}>2×</Text>
+        </View>
+      )}
+    </View>
+  );
+}
 
 function OffreCard({ offre }: { offre: any }) {
   const router = useRouter();
@@ -65,16 +124,8 @@ function OffreCard({ offre }: { offre: any }) {
     <View style={styles.card}>
       <View style={[styles.cardBg, { backgroundColor: offre.couleur || '#0d0d1a' }]} />
 
-      {/* Vidéo Mux si disponible */}
       {offre.mux_playback_id ? (
-        <Video
-          source={{ uri: `https://stream.mux.com/${offre.mux_playback_id}.m3u8` }}
-          style={styles.video}
-          useNativeControls={false}
-          resizeMode={ResizeMode.COVER}
-          isLooping
-          shouldPlay
-        />
+        <VideoCard uri={`https://stream.mux.com/${offre.mux_playback_id}.m3u8`} />
       ) : (
         <View style={styles.playZone}>
           <View style={styles.playBtn}>
@@ -83,9 +134,9 @@ function OffreCard({ offre }: { offre: any }) {
         </View>
       )}
 
-      <View style={styles.cardOverlay} />
+      <View style={styles.cardOverlay} pointerEvents="none" />
 
-      <View style={styles.header}>
+      <View style={styles.header} pointerEvents="none">
         <View style={styles.typePill}>
           <View style={[styles.typeDot, { backgroundColor: isOffre ? '#6C47FF' : '#FF2D55' }]} />
           <Text style={styles.typeText}>{isOffre ? 'Offre' : 'Candidature'}</Text>
@@ -195,7 +246,24 @@ const styles = StyleSheet.create({
   searchIcon: { color: '#FFFFFF', fontSize: 24 },
   card: { width, height: height - 80, overflow: 'hidden' },
   cardBg: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 },
-  video: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 },
+  videoZoneGauche: { flex: 0.3, height: '100%' },
+  videoZoneCentre: { flex: 0.4, height: '100%' },
+  videoZoneDroite: { flex: 0.3, height: '100%' },
+  pauseIcon: {
+    position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+    alignItems: 'center', justifyContent: 'center',
+  },
+  progressBar: {
+    position: 'absolute', bottom: 0, left: 0, right: 0,
+    height: 3, backgroundColor: 'rgba(255,255,255,0.2)',
+  },
+  progressFill: { height: 3, backgroundColor: '#FFFFFF' },
+  vitesseIndicateur: {
+    position: 'absolute', top: 120, alignSelf: 'center',
+    backgroundColor: 'rgba(0,0,0,0.5)', borderRadius: 8,
+    paddingHorizontal: 12, paddingVertical: 6,
+  },
+  vitesseText: { color: '#FFF', fontSize: 18, fontWeight: '900' },
   cardOverlay: {
     position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
     backgroundColor: 'rgba(0,0,0,0.15)',
