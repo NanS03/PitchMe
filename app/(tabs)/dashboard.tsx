@@ -1,87 +1,106 @@
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-
-const candidats = [
-  {
-    id: 1,
-    nom: 'Sara Morin',
-    role: 'Dev Full Stack · Lyon · 4 ans xp',
-    tags: ['React', 'Node.js', 'Remote'],
-    avatar: '👩‍💻',
-    nouveau: true,
-  },
-  {
-    id: 2,
-    nom: 'Lucas Bernard',
-    role: 'UX/UI Designer · Paris · 6 ans xp',
-    tags: ['Figma', 'Design Sys.'],
-    avatar: '👨‍🎨',
-    nouveau: true,
-  },
-  {
-    id: 3,
-    nom: 'Emma Petit',
-    role: 'Product Designer · Bordeaux · 3 ans xp',
-    tags: ['Figma', 'Prototyping'],
-    avatar: '👩‍🦰',
-    nouveau: false,
-  },
-];
+import { useEffect, useState } from 'react';
+import { ActivityIndicator, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { supabase } from '../../supabase';
 
 export default function DashboardScreen() {
+  const [stats, setStats] = useState({ offres: 0, candidatures: 0, likes: 0, vues: 0 });
+  const [offres, setOffres] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function chargerStats() {
+      const { data: offresData } = await supabase.from('offres').select('*');
+      const { count: likesCount } = await supabase.from('likes').select('*', { count: 'exact', head: true });
+      const { count: candidaturesCount } = await supabase.from('offres').select('*', { count: 'exact', head: true }).eq('type', 'candidature');
+
+      const totalVues = offresData?.reduce((acc, o) => acc + (o.vues || 0), 0) || 0;
+
+      setStats({
+        offres: offresData?.filter(o => o.type === 'offre').length || 0,
+        candidatures: candidaturesCount || 0,
+        likes: likesCount || 0,
+        vues: totalVues,
+      });
+
+      setOffres(offresData || []);
+      setLoading(false);
+    }
+    chargerStats();
+  }, []);
+
+  if (loading) {
+    return (
+      <View style={styles.loading}>
+        <ActivityIndicator size="large" color="#7C5CFC" />
+      </View>
+    );
+  }
+
   return (
     <ScrollView style={styles.container}>
-      <Text style={styles.welcome}>Bonjour, Antoine 👋</Text>
-      <Text style={styles.titre}>Dashboard Recruteur</Text>
+      <Text style={styles.titre}>Dashboard RH 📊</Text>
+      <Text style={styles.sousTitre}>Vue d'ensemble de vos recrutements</Text>
 
       <View style={styles.statsGrid}>
-        <View style={[styles.statCard, { borderColor: '#7C5CFC' }]}>
-          <Text style={[styles.statNum, { color: '#7C5CFC' }]}>47</Text>
-          <Text style={styles.statLabel}>Candidatures reçues</Text>
+        <View style={[styles.statCard, { backgroundColor: '#2D0A5E' }]}>
+          <Text style={styles.statIcon}>📋</Text>
+          <Text style={styles.statNombre}>{stats.offres}</Text>
+          <Text style={styles.statLabel}>Offres actives</Text>
         </View>
-        <View style={[styles.statCard, { borderColor: '#FC5C7D' }]}>
-          <Text style={[styles.statNum, { color: '#FC5C7D' }]}>8</Text>
-          <Text style={styles.statLabel}>Nouvelles ce mois</Text>
+        <View style={[styles.statCard, { backgroundColor: '#0A1A3E' }]}>
+          <Text style={styles.statIcon}>👤</Text>
+          <Text style={styles.statNombre}>{stats.candidatures}</Text>
+          <Text style={styles.statLabel}>Candidatures</Text>
         </View>
-        <View style={[styles.statCard, { borderColor: '#5CF4C8' }]}>
-          <Text style={[styles.statNum, { color: '#5CF4C8' }]}>2.4k</Text>
-          <Text style={styles.statLabel}>Vues sur annonce</Text>
+        <View style={[styles.statCard, { backgroundColor: '#1A0A3E' }]}>
+          <Text style={styles.statIcon}>❤️</Text>
+          <Text style={styles.statNombre}>{stats.likes}</Text>
+          <Text style={styles.statLabel}>Total likes</Text>
         </View>
-        <View style={styles.statCard}>
-          <Text style={styles.statNum}>3</Text>
-          <Text style={styles.statLabel}>Entretiens prevus</Text>
+        <View style={[styles.statCard, { backgroundColor: '#0A2A2E' }]}>
+          <Text style={styles.statIcon}>👁️</Text>
+          <Text style={styles.statNombre}>{stats.vues}</Text>
+          <Text style={styles.statLabel}>Total vues</Text>
         </View>
       </View>
 
-      <Text style={styles.sectionTitre}>Nouvelles candidatures 🔥</Text>
+      <Text style={styles.sectionTitre}>Mes offres publiées</Text>
 
-      {candidats.map((c) => (
-        <View key={c.id} style={styles.candidatCard}>
-          <View style={styles.candidatAvatar}>
-            <Text style={styles.candidatAvatarText}>{c.avatar}</Text>
-          </View>
-          <View style={styles.candidatInfo}>
-            <View style={styles.candidatNomRow}>
-              <Text style={styles.candidatNom}>{c.nom}</Text>
-              {c.nouveau && <Text style={styles.nouveauBadge}>● Nouveau</Text>}
+      {offres.filter(o => o.type === 'offre').map(offre => (
+        <View key={offre.id} style={styles.offreCard}>
+          <View style={styles.offreHeader}>
+            <View style={styles.offreInfo}>
+              <Text style={styles.offreTitre}>{offre.titre}</Text>
+              <Text style={styles.offreEntreprise}>{offre.entreprise}</Text>
+              <Text style={styles.offreLieu}>📍 {offre.lieu}</Text>
             </View>
-            <Text style={styles.candidatRole}>{c.role}</Text>
-            <View style={styles.tagsRow}>
-              {c.tags.map((tag) => (
-                <View key={tag} style={styles.tag}>
-                  <Text style={styles.tagText}>{tag}</Text>
-                </View>
-              ))}
+            <View style={styles.offreStats}>
+              <Text style={styles.offreStatText}>👁️ {offre.vues || 0}</Text>
             </View>
           </View>
-          <View style={styles.actions}>
-            <TouchableOpacity style={[styles.actionBtn, { backgroundColor: 'rgba(124,92,252,0.15)' }]}>
-              <Text>▶</Text>
+          <View style={styles.offreMeta}>
+            {offre.salaire && <Text style={styles.metaText}>💰 {offre.salaire}</Text>}
+          </View>
+          <View style={styles.progressBar}>
+            <View style={[styles.progressFill, { width: `${Math.min((offre.vues || 0) * 5, 100)}%` as any }]} />
+          </View>
+          <Text style={styles.progressLabel}>Taux de visibilité</Text>
+        </View>
+      ))}
+
+      <Text style={styles.sectionTitre}>Candidatures reçues</Text>
+
+      {offres.filter(o => o.type === 'candidature').map(candidature => (
+        <View key={candidature.id} style={[styles.offreCard, { borderLeftWidth: 3, borderLeftColor: '#FC5C7D' }]}>
+          <Text style={styles.offreTitre}>{candidature.titre}</Text>
+          <Text style={styles.offreEntreprise}>{candidature.entreprise}</Text>
+          <Text style={styles.offreLieu}>📍 {candidature.lieu}</Text>
+          <View style={styles.actionRow}>
+            <TouchableOpacity style={styles.actionBtn}>
+              <Text style={styles.actionBtnText}>💬 Contacter</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={[styles.actionBtn, { backgroundColor: 'rgba(92,244,200,0.15)' }]}>
-              <Text>✓</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={[styles.actionBtn, { backgroundColor: 'rgba(252,92,125,0.15)' }]}>
-              <Text>✗</Text>
+            <TouchableOpacity style={[styles.actionBtn, { backgroundColor: '#2A2A3A' }]}>
+              <Text style={[styles.actionBtnText, { color: '#8888AA' }]}>👀 Voir profil</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -95,118 +114,135 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#1A1A2E',
     paddingTop: 60,
-    paddingHorizontal: 20,
+    paddingHorizontal: 16,
   },
-  welcome: {
-    fontSize: 14,
-    color: '#8888AA',
-    marginBottom: 4,
+  loading: {
+    flex: 1,
+    backgroundColor: '#1A1A2E',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   titre: {
-    fontSize: 26,
-    fontWeight: 'bold',
-    color: '#F0F0F8',
-    marginBottom: 20,
-  },
-  statsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 10,
-    marginBottom: 24,
-  },
-  statCard: {
-    width: '47%',
-    backgroundColor: '#13131A',
-    borderRadius: 16,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: '#2A2A3A',
-  },
-  statNum: {
     fontSize: 28,
     fontWeight: 'bold',
     color: '#F0F0F8',
     marginBottom: 4,
   },
+  sousTitre: {
+    color: '#8888AA',
+    fontSize: 14,
+    marginBottom: 24,
+  },
+  statsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+    marginBottom: 28,
+  },
+  statCard: {
+    width: '47%',
+    borderRadius: 16,
+    padding: 16,
+    alignItems: 'center',
+    gap: 6,
+  },
+  statIcon: {
+    fontSize: 28,
+  },
+  statNombre: {
+    fontSize: 32,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+  },
   statLabel: {
     fontSize: 12,
-    color: '#8888AA',
+    color: 'rgba(255,255,255,0.7)',
+    textAlign: 'center',
   },
   sectionTitre: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: '#8888AA',
-    marginBottom: 12,
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#F0F0F8',
+    marginBottom: 14,
+    marginTop: 8,
   },
-  candidatCard: {
+  offreCard: {
     backgroundColor: '#13131A',
     borderRadius: 16,
-    padding: 14,
-    marginBottom: 10,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
+    padding: 16,
+    marginBottom: 12,
     borderWidth: 1,
     borderColor: '#2A2A3A',
   },
-  candidatAvatar: {
-    width: 48,
-    height: 48,
-    borderRadius: 12,
-    backgroundColor: '#2D0A5E',
-    alignItems: 'center',
-    justifyContent: 'center',
+  offreHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 8,
   },
-  candidatAvatarText: {
-    fontSize: 22,
-  },
-  candidatInfo: {
+  offreInfo: {
     flex: 1,
   },
-  candidatNomRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    marginBottom: 2,
-  },
-  candidatNom: {
+  offreTitre: {
+    fontSize: 15,
+    fontWeight: 'bold',
     color: '#F0F0F8',
-    fontWeight: '600',
-    fontSize: 14,
+    marginBottom: 3,
   },
-  nouveauBadge: {
-    color: '#FC5C7D',
-    fontSize: 11,
-    fontWeight: '600',
+  offreEntreprise: {
+    fontSize: 13,
+    color: '#7C5CFC',
+    marginBottom: 3,
   },
-  candidatRole: {
-    color: '#8888AA',
+  offreLieu: {
     fontSize: 12,
-    marginBottom: 6,
+    color: '#8888AA',
   },
-  tagsRow: {
+  offreStats: {
+    alignItems: 'flex-end',
+  },
+  offreStatText: {
+    fontSize: 13,
+    color: '#8888AA',
+  },
+  offreMeta: {
     flexDirection: 'row',
-    gap: 6,
-    flexWrap: 'wrap',
+    gap: 8,
+    marginBottom: 10,
   },
-  tag: {
-    backgroundColor: '#1A1A2E',
-    borderRadius: 6,
-    paddingHorizontal: 8,
-    paddingVertical: 2,
+  metaText: {
+    fontSize: 12,
+    color: '#8888AA',
   },
-  tagText: {
-    color: '#555570',
+  progressBar: {
+    height: 4,
+    backgroundColor: '#2A2A3A',
+    borderRadius: 2,
+    marginBottom: 4,
+    overflow: 'hidden',
+  },
+  progressFill: {
+    height: '100%',
+    backgroundColor: '#7C5CFC',
+    borderRadius: 2,
+  },
+  progressLabel: {
     fontSize: 11,
+    color: '#555570',
   },
-  actions: {
-    gap: 6,
+  actionRow: {
+    flexDirection: 'row',
+    gap: 8,
+    marginTop: 12,
   },
   actionBtn: {
-    width: 34,
-    height: 34,
-    borderRadius: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: '#7C5CFC',
+    borderRadius: 100,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+  },
+  actionBtnText: {
+    color: '#FFFFFF',
+    fontSize: 13,
+    fontWeight: '600',
   },
 });
