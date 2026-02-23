@@ -65,7 +65,6 @@ function OffreCard({ offre }: { offre: any }) {
       <View style={[styles.cardBg, { backgroundColor: offre.couleur || '#0d0d1a' }]} />
       <View style={styles.cardOverlay} />
 
-      {/* Header catégories */}
       <View style={styles.header}>
         <View style={styles.typePill}>
           <View style={[styles.typeDot, { backgroundColor: isOffre ? '#6C47FF' : '#FF2D55' }]} />
@@ -73,15 +72,18 @@ function OffreCard({ offre }: { offre: any }) {
         </View>
       </View>
 
-      {/* Bouton play centré */}
       <View style={styles.playZone}>
         <View style={styles.playBtn}>
           <Text style={styles.playIcon}>▶</Text>
         </View>
       </View>
 
-      {/* Infos bas gauche */}
-      <View style={styles.bottomLeft}>
+      {/* Zone cliquable pour voir le détail */}
+      <TouchableOpacity
+        style={styles.bottomLeft}
+        onPress={() => router.push(('/offre/' + offre.id) as any)}
+        activeOpacity={0.9}
+      >
         <View style={styles.companyRow}>
           <View style={styles.companyDot}>
             <Text style={styles.companyInitiales}>{initiales}</Text>
@@ -93,13 +95,10 @@ function OffreCard({ offre }: { offre: any }) {
           {offre.lieu ? <View style={styles.tag}><Text style={styles.tagText}>📍 {offre.lieu}</Text></View> : null}
           {offre.salaire ? <View style={styles.tag}><Text style={styles.tagText}>{offre.salaire}</Text></View> : null}
         </View>
-        <TouchableOpacity
-          style={[styles.cta, { backgroundColor: isOffre ? '#6C47FF' : '#FF2D55' }]}
-          onPress={() => router.push('/postuler')}
-        >
+        <View style={[styles.cta, { backgroundColor: isOffre ? '#6C47FF' : '#FF2D55' }]}>
           <Text style={styles.ctaText}>{isOffre ? '🎬 Postuler en vidéo' : '💬 Contacter'}</Text>
-        </TouchableOpacity>
-      </View>
+        </View>
+      </TouchableOpacity>
 
       {/* Actions droite */}
       <View style={styles.sideActions}>
@@ -109,17 +108,14 @@ function OffreCard({ offre }: { offre: any }) {
             <Text style={styles.followPlus}>+</Text>
           </View>
         </View>
-
         <TouchableOpacity style={styles.sideBtn} onPress={toggleLike}>
           <Text style={[styles.sideIcon, liked && { color: '#FF2D55' }]}>{liked ? '♥' : '♡'}</Text>
           <Text style={styles.sideLabel}>{likeCount}</Text>
         </TouchableOpacity>
-
         <TouchableOpacity style={styles.sideBtn} onPress={toggleSauvegarde}>
-          <Text style={[styles.sideIcon, sauvegarde && { color: '#FFD60A' }]}>{'⊡'}</Text>
+          <Text style={[styles.sideIcon, sauvegarde && { color: '#FFD60A' }]}>⊡</Text>
           <Text style={styles.sideLabel}>{vues}</Text>
         </TouchableOpacity>
-
         <TouchableOpacity style={styles.sideBtn} onPress={partager}>
           <Text style={styles.sideIcon}>↑</Text>
           <Text style={styles.sideLabel}>Partager</Text>
@@ -173,7 +169,6 @@ export default function HomeScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#000' },
-
   topHeader: {
     position: 'absolute', top: 0, left: 0, right: 0, zIndex: 10,
     paddingTop: 52, flexDirection: 'row', alignItems: 'center',
@@ -186,17 +181,13 @@ const styles = StyleSheet.create({
   catLine: { height: 2, width: '100%', backgroundColor: '#FFFFFF', marginTop: 3, borderRadius: 1 },
   searchBtn: { paddingRight: 20, paddingBottom: 12 },
   searchIcon: { color: '#FFFFFF', fontSize: 24 },
-
   card: { width, height: height - 80, overflow: 'hidden' },
-  cardBg: { position: 'absolute', inset: 0, top: 0, left: 0, right: 0, bottom: 0 },
+  cardBg: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 },
   cardOverlay: {
     position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
     backgroundColor: 'rgba(0,0,0,0.15)',
   },
-
-  header: {
-    position: 'absolute', top: 100, left: 16,
-  },
+  header: { position: 'absolute', top: 100, left: 16 },
   typePill: {
     flexDirection: 'row', alignItems: 'center', gap: 5,
     borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)', borderRadius: 100,
@@ -205,7 +196,6 @@ const styles = StyleSheet.create({
   },
   typeDot: { width: 6, height: 6, borderRadius: 3 },
   typeText: { color: '#FFFFFF', fontSize: 11, fontWeight: '700', letterSpacing: 0.5 },
-
   playZone: {
     position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
     alignItems: 'center', justifyContent: 'center',
@@ -217,10 +207,7 @@ const styles = StyleSheet.create({
     alignItems: 'center', justifyContent: 'center',
   },
   playIcon: { color: '#FFFFFF', fontSize: 20 },
-
-  bottomLeft: {
-    position: 'absolute', bottom: 28, left: 16, right: 80,
-  },
+  bottomLeft: { position: 'absolute', bottom: 28, left: 16, right: 80 },
   companyRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 10 },
   companyDot: {
     width: 36, height: 36, borderRadius: 10,
@@ -246,7 +233,6 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
   },
   ctaText: { color: '#FFFFFF', fontWeight: '700', fontSize: 14 },
-
   sideActions: {
     position: 'absolute', right: 10, bottom: 28,
     alignItems: 'center', gap: 22,
