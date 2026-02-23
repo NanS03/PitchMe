@@ -1,3 +1,4 @@
+import { ResizeMode, Video } from 'expo-av';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Dimensions, FlatList, ScrollView, Share, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
@@ -63,6 +64,25 @@ function OffreCard({ offre }: { offre: any }) {
   return (
     <View style={styles.card}>
       <View style={[styles.cardBg, { backgroundColor: offre.couleur || '#0d0d1a' }]} />
+
+      {/* Vidéo Mux si disponible */}
+      {offre.mux_playback_id ? (
+        <Video
+          source={{ uri: `https://stream.mux.com/${offre.mux_playback_id}.m3u8` }}
+          style={styles.video}
+          useNativeControls={false}
+          resizeMode={ResizeMode.COVER}
+          isLooping
+          shouldPlay
+        />
+      ) : (
+        <View style={styles.playZone}>
+          <View style={styles.playBtn}>
+            <Text style={styles.playIcon}>▶</Text>
+          </View>
+        </View>
+      )}
+
       <View style={styles.cardOverlay} />
 
       <View style={styles.header}>
@@ -72,13 +92,6 @@ function OffreCard({ offre }: { offre: any }) {
         </View>
       </View>
 
-      <View style={styles.playZone}>
-        <View style={styles.playBtn}>
-          <Text style={styles.playIcon}>▶</Text>
-        </View>
-      </View>
-
-      {/* Zone cliquable pour voir le détail */}
       <TouchableOpacity
         style={styles.bottomLeft}
         onPress={() => router.push(('/offre/' + offre.id) as any)}
@@ -100,7 +113,6 @@ function OffreCard({ offre }: { offre: any }) {
         </View>
       </TouchableOpacity>
 
-      {/* Actions droite */}
       <View style={styles.sideActions}>
         <View style={styles.sideAvatar}>
           <Text style={styles.sideAvatarInitiales}>{initiales}</Text>
@@ -183,6 +195,7 @@ const styles = StyleSheet.create({
   searchIcon: { color: '#FFFFFF', fontSize: 24 },
   card: { width, height: height - 80, overflow: 'hidden' },
   cardBg: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 },
+  video: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 },
   cardOverlay: {
     position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
     backgroundColor: 'rgba(0,0,0,0.15)',
