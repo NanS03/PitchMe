@@ -7,15 +7,16 @@ export default function TabLayout() {
       screenOptions={{
         headerShown: false,
         tabBarStyle: {
-          backgroundColor: '#13131A',
-          borderTopColor: '#2A2A3A',
-          height: 70,
-          paddingBottom: 10,
+          backgroundColor: '#0D0D0D',
+          borderTopColor: 'transparent',
+          height: 80,
+          paddingBottom: 16,
+          paddingTop: 8,
         },
-        tabBarActiveTintColor: '#7C5CFC',
-        tabBarInactiveTintColor: '#555570',
+        tabBarActiveTintColor: '#FFFFFF',
+        tabBarInactiveTintColor: '#444455',
         tabBarLabelStyle: {
-          fontSize: 11,
+          fontSize: 10,
           fontWeight: '600',
         },
       }}
@@ -24,65 +25,56 @@ export default function TabLayout() {
         name="index"
         options={{
           title: 'Feed',
-          tabBarIcon: ({ color }) => <Text style={{ fontSize: 22, color }}>🏠</Text>,
-        }}
-      />
-      <Tabs.Screen
-        name="postuler"
-        options={{
-          title: 'Postuler',
-          tabBarIcon: ({ color }) => <Text style={{ fontSize: 22, color }}>🎬</Text>,
-        }}
-      />
-      <Tabs.Screen
-        name="profil"
-        options={{
-          title: 'Profil',
-          tabBarIcon: ({ color }) => <Text style={{ fontSize: 22, color }}>👤</Text>,
-        }}
-      />
-      <Tabs.Screen
-        name="dashboard"
-        options={{
-          title: 'RH',
-          tabBarIcon: ({ color }) => <Text style={{ fontSize: 22, color }}>📊</Text>,
-        }}
-      />
-      <Tabs.Screen
-        name="poster"
-        options={{
-          title: 'Poster',
-          tabBarIcon: ({ color }) => <Text style={{ fontSize: 22, color }}>➕</Text>,
+          tabBarIcon: ({ focused }) => (
+            <Text style={{ fontSize: 24, opacity: focused ? 1 : 0.4 }}>🏠</Text>
+          ),
         }}
       />
       <Tabs.Screen
         name="notifications"
         options={{
           title: 'Notifs',
-          tabBarIcon: ({ color }) => <Text style={{ fontSize: 22, color }}>🔔</Text>,
+          tabBarIcon: ({ focused }) => (
+            <Text style={{ fontSize: 24, opacity: focused ? 1 : 0.4 }}>🔔</Text>
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="postuler"
+        options={{
+          title: 'Postuler',
+          tabBarIcon: ({ focused }) => (
+            <Text style={{ fontSize: 24, opacity: focused ? 1 : 0.4 }}>🎬</Text>
+          ),
+          tabBarItemStyle: {
+            backgroundColor: '#7C5CFC',
+            borderRadius: 16,
+            margin: 8,
+          },
         }}
       />
       <Tabs.Screen
         name="messages"
         options={{
           title: 'Messages',
-          tabBarIcon: ({ color }) => <Text style={{ fontSize: 22, color }}>💬</Text>,
+          tabBarIcon: ({ focused }) => (
+            <Text style={{ fontSize: 24, opacity: focused ? 1 : 0.4 }}>💬</Text>
+          ),
         }}
       />
       <Tabs.Screen
-        name="recherche"
+        name="profil"
         options={{
-          title: 'Recherche',
-          tabBarIcon: ({ color }) => <Text style={{ fontSize: 22, color }}>🔍</Text>,
+          title: 'Profil',
+          tabBarIcon: ({ focused }) => (
+            <Text style={{ fontSize: 24, opacity: focused ? 1 : 0.4 }}>👤</Text>
+          ),
         }}
       />
-      <Tabs.Screen
-        name="matching"
-        options={{
-          title: 'Matches',
-          tabBarIcon: ({ color }) => <Text style={{ fontSize: 22, color }}>🎯</Text>,
-        }}
-      />
+      <Tabs.Screen name="recherche" options={{ href: null }} />
+      <Tabs.Screen name="dashboard" options={{ href: null }} />
+      <Tabs.Screen name="poster" options={{ href: null }} />
+      <Tabs.Screen name="matching" options={{ href: null }} />
     </Tabs>
   );
 }
