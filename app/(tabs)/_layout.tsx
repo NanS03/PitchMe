@@ -76,6 +76,13 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => <Text style={{ fontSize: 22, color }}>🔍</Text>,
         }}
       />
+      <Tabs.Screen
+        name="matching"
+        options={{
+          title: 'Matches',
+          tabBarIcon: ({ color }) => <Text style={{ fontSize: 22, color }}>🎯</Text>,
+        }}
+      />
     </Tabs>
   );
 }
