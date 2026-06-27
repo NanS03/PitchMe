@@ -43,7 +43,8 @@
           }
         }
       ],
-      "expo-video"
+      "expo-video",
+      ["@stripe/stripe-react-native", { "merchantIdentifier": "merchant.com.nans03.PitchMe" }]
     ],
     "experiments": {
       "typedRoutes": true,

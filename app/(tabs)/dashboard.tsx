@@ -1,8 +1,10 @@
+import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { supabase } from '../../supabase';
 
 export default function DashboardScreen() {
+  const router = useRouter();
   const [stats, setStats] = useState({ offres: 0, candidatures: 0, likes: 0, vues: 0 });
   const [offres, setOffres] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -38,6 +40,10 @@ export default function DashboardScreen() {
 
   return (
     <ScrollView style={styles.container}>
+      <TouchableOpacity style={styles.retourBtn} onPress={() => router.push('/profil')}>
+        <Text style={styles.retourBtnText}>← Retour au profil</Text>
+      </TouchableOpacity>
+
       <Text style={styles.titre}>Dashboard RH 📊</Text>
       <Text style={styles.sousTitre}>Vue d'ensemble de vos recrutements</Text>
 
@@ -243,6 +249,14 @@ const styles = StyleSheet.create({
   actionBtnText: {
     color: '#FFFFFF',
     fontSize: 13,
+    fontWeight: '600',
+  },
+  retourBtn: {
+    marginBottom: 16,
+  },
+  retourBtnText: {
+    color: '#6C47FF',
+    fontSize: 14,
     fontWeight: '600',
   },
 });

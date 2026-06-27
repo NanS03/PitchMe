@@ -1,9 +1,11 @@
 import * as ImagePicker from 'expo-image-picker';
+import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Alert, Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { supabase } from '../../supabase';
 
 export default function ProfilScreen() {
+  const router = useRouter();
   const [user, setUser] = useState<any>(null);
   const [profil, setProfil] = useState<any>(null);
   const [nom, setNom] = useState('');
@@ -164,6 +166,9 @@ export default function ProfilScreen() {
             <Text style={styles.emailIcon}>📧</Text>
             <Text style={styles.emailText}>{user?.email}</Text>
           </View>
+          <TouchableOpacity style={styles.recruteurBtn} onPress={() => router.push('/dashboard')}>
+            <Text style={styles.recruteurBtnText}>💼 Espace Recruteur</Text>
+          </TouchableOpacity>
           <TouchableOpacity style={styles.deconnexionBtn} onPress={seDeconnecter}>
             <Text style={styles.deconnexionText}>🚪 Se déconnecter</Text>
           </TouchableOpacity>
@@ -238,6 +243,11 @@ const styles = StyleSheet.create({
   emailRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 14 },
   emailIcon: { fontSize: 16 },
   emailText: { color: '#8888AA', fontSize: 14 },
+  recruteurBtn: {
+    backgroundColor: '#6C47FF', borderRadius: 14, padding: 16,
+    alignItems: 'center', marginBottom: 10,
+  },
+  recruteurBtnText: { color: '#FFFFFF', fontWeight: '800', fontSize: 15 },
   deconnexionBtn: {
     backgroundColor: '#13131A', borderRadius: 14, padding: 16,
     alignItems: 'center', borderWidth: 1, borderColor: '#2A2A3A',

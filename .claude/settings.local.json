@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(wc -l \"C:/Users/alexi/PitchMe/app/\\(tabs\\)/dashboard.tsx\")",
+      "Bash(cd \"C:/Users/alexi/PitchMe\" && npx tsc --noEmit --skipLibCheck \"app/\\(tabs\\)/profil.tsx\" \"app/\\(tabs\\)/dashboard.tsx\" 2>&1)",
+      "Bash(cd \"C:/Users/alexi/PitchMe\" && npx tsc --noEmit 2>&1 | grep -v \"TS17004\" | head -20)",
+      "Bash(cd \"C:/Users/alexi/PitchMe\" && npx expo start 2>&1 | head -30)"
+    ]
+  }
+}
